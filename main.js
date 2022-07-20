@@ -63,7 +63,7 @@
           }
         }
 
-        window.addEventListener('load', displayDetails);
+        window.addEventListener('DOMContentLoaded', displayDetails);
         
         async function displayDetails(){
             userList.innerHTML = '';

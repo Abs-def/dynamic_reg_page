@@ -88,10 +88,9 @@
                 li.appendChild(deleteBtn);
                 li.appendChild(editBtn);
 
-                
-                // deleteBtn.addEventListener('click', () => deleteFunction(element.id));
-                // editBtn.addEventListener('click', () => editFunction(element.id));
-
+                //console.log('element id: ',deleteBtn.parentElement.id);
+                deleteBtn.addEventListener('click', () => deleteFunction(deleteBtn.parentElement.id));
+                editBtn.addEventListener('click', () => editFunction(editBtn.parentElement.id));
                 
                 userList.appendChild(li);
             }) : '' ;
@@ -118,9 +117,12 @@
         }
 
         function deleteFunction(id){
-          //console.log(id);
-          let newArr = userArr.filter(element => element.id != id);
-          //console.log(newArr);
-          localStorage.setItem('allUsers', JSON.stringify(newArr));
-          displayDetails();
+            let toDeleteURL = `https://crudcrud.com/api/13ab0dd4e1214effb26a92c6b77989c9/appointmentData/${id}`;
+            //console.log(toDeleteURL);
+
+            axios.delete(`${toDeleteURL}`)
+                .then(() => {
+                    displayDetails();
+                })
+                .catch(err => console.log(err));
         }

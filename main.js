@@ -42,7 +42,7 @@
 
               //localStorage.setItem('allUsers', JSON.stringify(userArr)); 
               axios
-                .post("https://crudcrud.com/api/13ab0dd4e1214effb26a92c6b77989c9/appointmentData", userDetails)
+                .post("https://crudcrud.com/api/0e34e419aa1648a082244bbfdec69df7/appointmentData", userDetails)
                 .then((res) => {
                     console.log('response data: ', res.data);
                     displayDetails();
@@ -67,7 +67,7 @@
         
         async function displayDetails(){
             userList.innerHTML = '';
-            let temp =await axios.get("https://crudcrud.com/api/13ab0dd4e1214effb26a92c6b77989c9/appointmentData");
+            let temp =await axios.get("https://crudcrud.com/api/0e34e419aa1648a082244bbfdec69df7/appointmentData");
             // userArr = temp;
             console.log('data from crudcrud: ',temp.data);
 
@@ -97,27 +97,27 @@
             
         }
 
-        function editFunction(id){
+        async function editFunction(id){
           // console.log(id);
-          let toEdit = userArr.filter(element => element.id == id);
-          //console.log(toEdit);
-          
-          let newName = toEdit[0].name;
-          let newEmail = toEdit[0].email;
+            let toEditURL = `https://crudcrud.com/api/0e34e419aa1648a082244bbfdec69df7/appointmentData/${id}`;
 
-          // console.log(newName);
-          // console.log(newEmail);
-          // console.log(userArr);
-          let newArr = userArr.filter(element => element.id != id);
-          //console.log(newArr);
-          localStorage.setItem('allUsers', JSON.stringify(newArr));
-          displayDetails();
-          nameInput.value = newName;
-          emailInput.value = newEmail;
+            let newName;
+            let newEmail;
+            let res = await axios.get(`${toEditURL}`);
+            
+            newName = res.data.name;
+            newEmail = res.data.email;
+
+            axios.delete(`${toEditURL}`)
+                .then(() => {
+                    displayDetails();
+                })
+                .catch(err => console.log(err));
+
         }
 
         function deleteFunction(id){
-            let toDeleteURL = `https://crudcrud.com/api/13ab0dd4e1214effb26a92c6b77989c9/appointmentData/${id}`;
+            let toDeleteURL = `https://crudcrud.com/api/0e34e419aa1648a082244bbfdec69df7/appointmentData/${id}`;
             //console.log(toDeleteURL);
 
             axios.delete(`${toDeleteURL}`)

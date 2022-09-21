@@ -5,13 +5,9 @@ let phoneInput = document.querySelector('#phone');
 const msg = document.querySelector('.msg');
 const userList = document.querySelector('#users');
 
-let userArr = [];
-
-
 myForm.addEventListener('submit', onSubmit);
 
-
-function onSubmit(e){
+async function onSubmit(e){
     e.preventDefault();
     
     if(nameInput.value == '' || emailInput.value == '' || phoneInput.value == ''){
@@ -21,108 +17,92 @@ function onSubmit(e){
 
         setTimeout(() => msg.remove(), 3000);
     }else{
-      
-      // if(localStorage.getItem(id) !== null){
+      try {
+        let userDetails = {
+          name : nameInput.value,
+          email : emailInput.value,
+          phone: phoneInput.value
+        };
+  
+        //console.log(userDetails);
+        await axios.post("http://localhost:5000/add-user", userDetails);
         
-      //   removeFromScreen(emailInput.value);
-        
-      // }
-      let userDetails = {
-        name : nameInput.value,
-        email : emailInput.value,
-        phone: phoneInput.value
-      };
-
-      //console.log(userDetails);
-    
-      if (userArr == null) userArr =[];
-       userArr.push(userDetails); 
-      console.log(userArr);
-
-      localStorage.setItem('allUsers', JSON.stringify(userArr)); 
-      axios
-        .post("http://localhost:5000/add-user", userDetails)
-        .then((res) => {
-            console.log('response data: ', res.data);
-            displayDetails();
-        })
-        .catch((err) => console.log(err));
-
-      nameInput.value = '';
-      emailInput.value = '';
-      phoneInput.value = '';
+        displayDetails();
+  
+        nameInput.value = '';
+        emailInput.value = '';
+        phoneInput.value = '';
+      } catch (error) {
+        console.log(error);
+      }
     }
-}
-
-
-
-function removeFromScreen(mail){
-  let childNodeToBeDeleted = document.getElementById(mail);
-  if(childNodeToBeDeleted){
-    userList.removeChild(childNodeToBeDeleted);
-  }
 }
 
 window.addEventListener('DOMContentLoaded', displayDetails);
 
 async function displayDetails(){
+  try {
     userList.innerHTML = '';
-    let temp =await axios.get("https://crudcrud.com/api/0e34e419aa1648a082244bbfdec69df7/appointmentData");
+    let temp =await axios.get("http://localhost:5000/get-users");
     // userArr = temp;
-    console.log('data from crudcrud: ',temp.data);
+    console.log('data from backend: ',temp.data);
 
-  
-    temp.data ? temp.data.forEach((ele) => {
-        const li = document.createElement('li');
-        
-        li.appendChild(document.createTextNode(`name: ${ele.name}, email: ${ele.email}`));
-        li.setAttribute('id', ele._id);
+    temp.data.forEach((ele) => {
+      const li = document.createElement('li');
+      
+      li.appendChild(document.createTextNode(`name: ${ele.name}, email: ${ele.email}, phone: ${ele.phone}`));
+      li.setAttribute('id', ele.id);
 
-        
-        let deleteBtn = document.createElement('button');
-        let editBtn = document.createElement('button');
+      
+      let deleteBtn = document.createElement('button');
+      let editBtn = document.createElement('button');
 
-        deleteBtn.appendChild(document.createTextNode('Delete'));
-        editBtn.appendChild(document.createTextNode('Edit'));
+      deleteBtn.appendChild(document.createTextNode('Delete'));
+      editBtn.appendChild(document.createTextNode('Edit'));
 
-        li.appendChild(deleteBtn);
-        li.appendChild(editBtn);
+      li.appendChild(deleteBtn);
+      li.appendChild(editBtn);
 
-        //console.log('element id: ',deleteBtn.parentElement.id);
-        deleteBtn.addEventListener('click', () => deleteFunction(deleteBtn.parentElement.id));
-        editBtn.addEventListener('click', () => editFunction(editBtn.parentElement.id));
-        
-        userList.appendChild(li);
-    }) : '' ;
-    
+      //console.log('element id: ',deleteBtn.parentElement.id);
+      deleteBtn.addEventListener('click', () => {
+        deleteFunction(deleteBtn.parentElement.id);
+      });
+      editBtn.addEventListener('click', () => {
+        editFunction(editBtn.parentElement.id)
+      });
+      
+      userList.appendChild(li);
+    });
+  } catch (error) {
+    console.log(error);
+  }    
 }
 
 async function editFunction(id){
-  // console.log(id);
-    let toEditURL = `https://crudcrud.com/api/0e34e419aa1648a082244bbfdec69df7/appointmentData/${id}`;
+   console.log(id);
+    let toEditURL = `http://localhost:5000/edit-user/${id}`;
 
-    let newName;
-    let newEmail;
     let res = await axios.get(`${toEditURL}`);
+
+    console.log(res);
     
-    newName = res.data.name;
-    newEmail = res.data.email;
+    let newName = res.data.name;
+    let newEmail = res.data.email;
+    let newPhone = res.data.phone;
 
-    axios.delete(`${toEditURL}`)
-        .then(() => {
-            displayDetails();
-        })
-        .catch(err => console.log(err));
+    displayDetails();
 
+    nameInput.value = newName;
+    emailInput.value = newEmail;
+    phoneInput.value = newPhone;
 }
 
-function deleteFunction(id){
-    let toDeleteURL = `https://crudcrud.com/api/0e34e419aa1648a082244bbfdec69df7/appointmentData/${id}`;
+async function deleteFunction(id){
+    let toDeleteURL = `http://localhost:5000/delete-user/${id}`;
     //console.log(toDeleteURL);
 
-    axios.delete(`${toDeleteURL}`)
-        .then(() => {
-            displayDetails();
-        })
-        .catch(err => console.log(err));
+    let res = await axios.get(`${toDeleteURL}`);
+    console.log('deleted user: ', res.data);
+
+    await displayDetails();
 }

@@ -16,7 +16,7 @@ const adminRoutes = require('./routes/admin');
 
 app.use(adminRoutes);
 
-sequelize.sync({force: true})
+sequelize.sync()
     .then(() => {
         app.listen(5000);
     })
